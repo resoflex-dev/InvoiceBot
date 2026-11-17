@@ -1,0 +1,16 @@
+[Unit]
+Description=Resoflex InvoiceBot
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/invoicebot
+Environment=PYTHONPATH=/opt/invoicebot/src
+EnvironmentFile=/opt/invoicebot/.env
+ExecStart=/opt/invoicebot/.venv/bin/python -m invoicebot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
