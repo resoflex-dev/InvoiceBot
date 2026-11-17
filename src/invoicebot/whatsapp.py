@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 import httpx
+import logging
+
+logger = logging.getLogger("invoicebot.whatsapp")
 
 
 @dataclass
@@ -16,6 +19,8 @@ class WhatsAppClient:
         payload = {"messaging_product": "whatsapp", "to": recipient, "type": "text", "text": {"body": text}}
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(url, headers={"Authorization": f"Bearer {self.access_token}"}, json=payload)
+            if response.is_error:
+                logger.error("WhatsApp text API error status=%s body=%s", response.status_code, response.text[:1000])
             response.raise_for_status()
             return response.json()
 
