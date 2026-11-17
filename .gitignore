@@ -7,6 +7,7 @@ __pycache__/
 .venv/
 *.sqlite3
 *.log
+facebookKeys.txt
 template/*.xls
 template/*.xlsx
 template/*.backup
