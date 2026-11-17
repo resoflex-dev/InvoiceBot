@@ -60,6 +60,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     sender = message.get("from")
                     text = (message.get("text") or {}).get("body")
                     if sender and text and (settings.environment != "production" or sender in settings.approved_sender_ids):
+                        if settings.whatsapp_ack_enabled and settings.whatsapp_access_token and settings.whatsapp_phone_number_id:
+                            await app.state.whatsapp.send_text(sender, "Message received by Resoflex InvoiceBot. Processing now.")
                         result = app.state.workflow.handle_text(sender, text)
                         if settings.whatsapp_access_token and settings.whatsapp_phone_number_id:
                             await app.state.whatsapp.send_text(sender, result["message"])

@@ -20,6 +20,7 @@ class Settings:
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
     approved_sender_ids_raw: str = os.getenv("APPROVED_SENDER_IDS", "")
+    whatsapp_ack_enabled: bool = os.getenv("WHATSAPP_ACK_ENABLED", "false").lower() == "true"
 
     @property
     def approved_sender_ids(self) -> frozenset[str]:
