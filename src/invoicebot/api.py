@@ -30,6 +30,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def health():
         return {"status": "ok", "environment": settings.environment}
 
+    @app.get("/admin/logs")
+    async def admin_logs(x_admin_log_token: str | None = Header(default=None)):
+        if not settings.admin_log_token or x_admin_log_token != settings.admin_log_token:
+            raise HTTPException(status_code=401, detail="admin log authorization required")
+        with db.connection() as conn:
+            events = conn.execute("SELECT event_id, received_at, payload_json FROM webhook_events ORDER BY received_at DESC LIMIT 50").fetchall()
+            conversations = conn.execute("SELECT sender_id, state, updated_at FROM conversations ORDER BY updated_at DESC LIMIT 50").fetchall()
+        safe_events = []
+        for event in events:
+            payload = json.loads(event[2])
+            messages = []
+            for entry in payload.get("entry", []):
+                for change in entry.get("changes", []):
+                    for message in change.get("value", {}).get("messages", []):
+                        messages.append({"from": message.get("from"), "type": message.get("type"), "text": (message.get("text") or {}).get("body")})
+            safe_events.append({"event_id": event[0], "received_at": event[1], "messages": messages})
+        return {"events": safe_events, "conversations": [dict(row) for row in conversations]}
+
     @app.get("/data-deletion", response_class=HTMLResponse)
     async def data_deletion_instructions():
         return """<!doctype html><html><head><meta charset='utf-8'><title>Resoflex InvoiceBot data deletion</title></head><body><h1>Resoflex InvoiceBot data deletion</h1><p>To request deletion of data held by Resoflex InvoiceBot, contact the Resoflex administrator through the business contact channel that provided this service and include your WhatsApp number in international format.</p><p>We will verify the request, delete conversation records, invoice drafts, webhook records, audit records, and generated invoice files associated with the requester where legally permitted, and confirm completion.</p><p>This page is provided for Meta platform data-deletion instructions.</p></body></html>"""

@@ -45,6 +45,13 @@ class V1Tests(unittest.TestCase):
             with client.app.state.db.connection() as conn:
                 self.assertEqual(conn.execute("SELECT COUNT(*) FROM conversations").fetchone()[0], 0)
 
+    def test_admin_logs_require_token(self):
+        with tempfile.TemporaryDirectory() as td:
+            settings = Settings(database_path=Path(td) / "x.sqlite3", admin_log_token="secret-log-token")
+            client = TestClient(create_app(settings))
+            self.assertEqual(client.get("/admin/logs").status_code, 401)
+            self.assertEqual(client.get("/admin/logs", headers={"x-admin-log-token": "secret-log-token"}).status_code, 200)
+
 
 if __name__ == "__main__":
     unittest.main()
