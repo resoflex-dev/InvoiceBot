@@ -11,6 +11,7 @@ class WhatsAppClient:
     async def send_text(self, recipient: str, text: str) -> dict:
         if not self.access_token or not self.phone_number_id:
             raise RuntimeError("WhatsApp credentials are not configured")
+        recipient = recipient.lstrip("+")
         url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
         payload = {"messaging_product": "whatsapp", "to": recipient, "type": "text", "text": {"body": text}}
         async with httpx.AsyncClient(timeout=30) as client:
@@ -21,6 +22,7 @@ class WhatsAppClient:
     async def send_document(self, recipient: str, document_url: str, filename: str, caption: str = "") -> dict:
         if not self.access_token or not self.phone_number_id:
             raise RuntimeError("WhatsApp credentials are not configured")
+        recipient = recipient.lstrip("+")
         url = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}/messages"
         payload = {"messaging_product": "whatsapp", "to": recipient, "type": "document", "document": {"link": document_url, "filename": filename, "caption": caption}}
         async with httpx.AsyncClient(timeout=30) as client:
@@ -31,6 +33,7 @@ class WhatsAppClient:
     async def send_document_file(self, recipient: str, file_path: str, filename: str, caption: str = "") -> dict:
         if not self.access_token or not self.phone_number_id:
             raise RuntimeError("WhatsApp credentials are not configured")
+        recipient = recipient.lstrip("+")
         base = f"https://graph.facebook.com/{self.api_version}/{self.phone_number_id}"
         async with httpx.AsyncClient(timeout=60) as client:
             with open(file_path, "rb") as handle:
