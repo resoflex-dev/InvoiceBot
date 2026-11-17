@@ -1,0 +1,13 @@
+.env
+var/
+output/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.sqlite3
+*.log
+template/*.xls
+template/*.xlsx
+template/*.backup
+

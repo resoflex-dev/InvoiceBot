@@ -1,0 +1,2 @@
+"""Resoflex InvoiceBot."""
+

@@ -1,0 +1,10 @@
+fastapi
+httpx
+openai
+openpyxl
+reportlab
+reportlab
+pywin32; platform_system == "Windows"
+python-dotenv
+uvicorn
+
