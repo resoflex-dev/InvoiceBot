@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
@@ -13,6 +14,8 @@ from .ai import ExtractionService
 from .workflow import ConversationWorkflow
 from .whatsapp import WhatsAppClient
 from .delivery import DeliveryService
+
+logger = logging.getLogger("invoicebot")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -83,13 +86,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                 await app.state.whatsapp.send_text(sender, "Message received by Resoflex InvoiceBot. Processing now.")
                             except Exception:
                                 # Never fail webhook acknowledgement because an outbound token/API call failed.
-                                pass
+                                logger.exception("WhatsApp receipt acknowledgement failed")
                         result = app.state.workflow.handle_text(sender, text)
                         if settings.whatsapp_access_token and settings.whatsapp_phone_number_id:
                             try:
                                 await app.state.whatsapp.send_text(sender, result["message"])
                             except Exception:
-                                pass
+                                logger.exception("WhatsApp workflow response failed")
         return {"status": "accepted"}
 
     @app.post("/invoices/finalize")
