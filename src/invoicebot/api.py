@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse
 
 from .config import Settings
 from .db import Database
@@ -28,6 +29,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health")
     async def health():
         return {"status": "ok", "environment": settings.environment}
+
+    @app.get("/data-deletion", response_class=HTMLResponse)
+    async def data_deletion_instructions():
+        return """<!doctype html><html><head><meta charset='utf-8'><title>Resoflex InvoiceBot data deletion</title></head><body><h1>Resoflex InvoiceBot data deletion</h1><p>To request deletion of data held by Resoflex InvoiceBot, contact the Resoflex administrator through the business contact channel that provided this service and include your WhatsApp number in international format.</p><p>We will verify the request, delete conversation records, invoice drafts, webhook records, audit records, and generated invoice files associated with the requester where legally permitted, and confirm completion.</p><p>This page is provided for Meta platform data-deletion instructions.</p></body></html>"""
 
     @app.get("/webhook")
     async def verify_webhook(hub_mode: str | None = Query(default=None, alias="hub.mode"), hub_verify_token: str | None = Query(default=None, alias="hub.verify_token"), hub_challenge: str | None = Query(default=None, alias="hub.challenge")):
