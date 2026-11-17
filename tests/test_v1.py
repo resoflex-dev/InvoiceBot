@@ -33,6 +33,18 @@ class V1Tests(unittest.TestCase):
             self.assertEqual(client.post("/webhook", content=body, headers={"x-hub-signature-256": sig}).json(), {"status": "accepted"})
             self.assertEqual(client.post("/webhook", content=body, headers={"x-hub-signature-256": sig}).json(), {"status": "duplicate"})
 
+    def test_production_webhook_requires_approved_sender(self):
+        with tempfile.TemporaryDirectory() as td:
+            settings = Settings(database_path=Path(td) / "x.sqlite3", whatsapp_verify_token="token", whatsapp_app_secret="secret", environment="production", approved_sender_ids_raw="94770000000")
+            client = TestClient(create_app(settings))
+            payload = {"entry": [{"changes": [{"value": {"messages": [{"from": "94771111111", "text": {"body": "test"}}]}}]}]}
+            import hmac, hashlib, json
+            body = json.dumps(payload).encode()
+            sig = "sha256=" + hmac.new(b"secret", body, hashlib.sha256).hexdigest()
+            self.assertEqual(client.post("/webhook", content=body, headers={"x-hub-signature-256": sig}).json(), {"status": "accepted"})
+            with client.app.state.db.connection() as conn:
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM conversations").fetchone()[0], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
